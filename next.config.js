@@ -1,17 +1,24 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  eslint: {
-    // O build não falha por avisos de lint (ex.: uso de <img>).
-    ignoreDuringBuilds: true,
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*.supabase.co",
-      },
-    ],
-  },
+export type Category = {
+  id: string;
+  name_pt: string;
+  name_en: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
 };
 
-module.exports = nextConfig;
+export type Product = {
+  id: string;
+  category_id: string | null;
+  name_pt: string;
+  name_en: string;
+  description_pt: string;
+  description_en: string;
+  price: number;
+  image_url: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type Lang = "pt" | "en";
