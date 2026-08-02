@@ -1,11 +1,17 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { getServerSupabase } from "@/lib/supabase/server";
 import type { Category, Product } from "@/lib/types";
 import MenuView from "@/components/MenuView";
 
 // O menu deve refletir sempre as últimas alterações do backoffice.
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export default async function HomePage() {
+  // Garante que esta página nunca é servida a partir de cache.
+  noStore();
+
   const supabase = getServerSupabase();
 
   const [{ data: categories }, { data: products }] = await Promise.all([
