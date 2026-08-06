@@ -37,10 +37,10 @@ export default function LoginPage() {
             <img src="/logo.jpeg" alt="Bagaúste Bar" className="h-full w-full object-contain" />
           </div>
           <h1 className="text-xl font-extrabold text-brand-navy">
-            Backoffice — Bagaúste Bar
+            Backoffice
           </h1>
           <p className="mt-1 text-sm text-brand-navy/60">
-            Inicie sessão para gerir o menu.
+            Inicie sessão para gerir o seu menu.
           </p>
         </div>
 

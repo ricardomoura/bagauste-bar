@@ -5,11 +5,13 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 import type { Category } from "@/lib/types";
 
 export default function CategoryModal({
+  barId,
   category,
   nextSortOrder,
   onClose,
   onSaved,
 }: {
+  barId: string;
   category: Category | null;
   nextSortOrder: number;
   onClose: () => void;
@@ -43,7 +45,9 @@ export default function CategoryModal({
           .from("categories")
           .update(payload)
           .eq("id", category.id)
-      : await supabaseBrowser.from("categories").insert(payload);
+      : await supabaseBrowser
+          .from("categories")
+          .insert({ ...payload, bar_id: barId });
 
     setSaving(false);
     if (error) {

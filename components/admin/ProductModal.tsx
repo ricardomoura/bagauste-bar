@@ -5,6 +5,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 import type { Category, Product } from "@/lib/types";
 
 export default function ProductModal({
+  barId,
   product,
   categories,
   defaultCategoryId,
@@ -12,6 +13,7 @@ export default function ProductModal({
   onClose,
   onSaved,
 }: {
+  barId: string;
   product: Product | null;
   categories: Category[];
   defaultCategoryId: string | null;
@@ -94,7 +96,9 @@ export default function ProductModal({
           .from("products")
           .update(payload)
           .eq("id", product.id)
-      : await supabaseBrowser.from("products").insert(payload);
+      : await supabaseBrowser
+          .from("products")
+          .insert({ ...payload, bar_id: barId });
 
     setSaving(false);
     if (error) {
