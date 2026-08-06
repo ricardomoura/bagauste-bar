@@ -1,113 +1,88 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const pathname = usePathname();
+export default function LoginPage() {
   const router = useRouter();
-  const isLogin = pathname === "/admin/login";
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const [ready, setReady] = useState(false);
-  const [authed, setAuthed] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    supabaseBrowser.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      const hasSession = !!data.session;
-      setAuthed(hasSession);
-      setReady(true);
-      if (!hasSession && !isLogin) router.replace("/admin/login");
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const { error } = await supabaseBrowser.auth.signInWithPassword({
+      email,
+      password,
     });
-
-    const { data: sub } = supabaseBrowser.auth.onAuthStateChange(
-      (_event, session) => {
-        setAuthed(!!session);
-        if (!session && !isLogin) router.replace("/admin/login");
-      }
-    );
-
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
-  }, [isLogin, router]);
-
-  // A página de login não usa a moldura do backoffice.
-  if (isLogin) return <>{children}</>;
-
-  if (!ready) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-brand-navy/60">
-        A carregar…
-      </div>
-    );
-  }
-
-  if (!authed) return null; // a redirecionar para o login
-
-  async function signOut() {
-    await supabaseBrowser.auth.signOut();
-    router.replace("/admin/login");
+    setLoading(false);
+    if (error) {
+      setError("Email ou palavra-passe incorretos.");
+      return;
+    }
+    router.replace("/admin");
+    router.refresh();
   }
 
   return (
-    <div className="min-h-screen bg-brand-sand/40">
-      <header className="sticky top-0 z-20 border-b border-brand-sand bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 overflow-hidden rounded-full">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.jpeg" alt="" className="h-full w-full object-contain" />
-            </div>
-            <span className="font-extrabold text-brand-navy">Backoffice</span>
+    <div className="flex min-h-screen items-center justify-center bg-brand-navy px-5">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-3 h-16 w-16 overflow-hidden rounded-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.jpeg" alt="Bagaúste Bar" className="h-full w-full object-contain" />
           </div>
-          <nav className="flex items-center gap-1 text-sm font-semibold">
-            <Link
-              href="/admin"
-              className={`rounded-lg px-3 py-1.5 ${
-                pathname === "/admin"
-                  ? "bg-brand-navy text-white"
-                  : "text-brand-navy hover:bg-brand-sand"
-              }`}
-            >
-              Menu
-            </Link>
-            <Link
-              href="/admin/qr"
-              className={`rounded-lg px-3 py-1.5 ${
-                pathname === "/admin/qr"
-                  ? "bg-brand-navy text-white"
-                  : "text-brand-navy hover:bg-brand-sand"
-              }`}
-            >
-              QR Code
-            </Link>
-            <a
-              href="/"
-              target="_blank"
-              className="rounded-lg px-3 py-1.5 text-brand-navy hover:bg-brand-sand"
-            >
-              Ver menu ↗
-            </a>
-            <button
-              onClick={signOut}
-              className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
-            >
-              Sair
-            </button>
-          </nav>
+          <h1 className="text-xl font-extrabold text-brand-navy">
+            Backoffice
+          </h1>
+          <p className="mt-1 text-sm text-brand-navy/60">
+            Inicie sessão para gerir o seu menu.
+          </p>
         </div>
-      </header>
-      <main className="mx-auto max-w-5xl px-5 py-6">{children}</main>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-semibold text-brand-navy">
+              Email
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg border border-brand-navy/15 px-3 py-2 outline-none focus:border-brand-orange"
+              placeholder="email@exemplo.pt"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-semibold text-brand-navy">
+              Palavra-passe
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg border border-brand-navy/15 px-3 py-2 outline-none focus:border-brand-orange"
+              placeholder="••••••••"
+            />
+          </div>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg brand-gradient py-2.5 font-bold text-white transition hover:opacity-90 disabled:opacity-60"
+          >
+            {loading ? "A entrar…" : "Entrar"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
